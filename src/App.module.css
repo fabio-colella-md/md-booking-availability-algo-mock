@@ -1,0 +1,52 @@
+.app {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+.left {
+    border-right: solid gray 1px;
+    height: 100%;
+    width: 50%;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.leftInner {
+    padding: 2rem;
+    width: 100%;
+    height: 80%;
+}
+
+.right {
+    background-color: darkgray;
+    height: 100%;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 2px;
+    image-rendering: crisp-edges;
+}
+
+.textarea {
+    width: 100%;
+    height: 48%;
+}
+
+.parsed {
+    min-height: 3rem;
+    min-width: 50%;
+    background-color: lightgray;
+    border-radius: 2px;
+    padding: 1rem;
+}
