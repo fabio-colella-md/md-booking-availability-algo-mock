@@ -1,20 +1,19 @@
-export const range = (s, e = null): number[] =>
+const range = (s, e = null): number[] =>
   e === null
     ? [...Array(s).keys()]
     : [...Array(e - s).keys()].map((i) => i + s);
 
-
-export const timeToInt = (timeString: string) => {
+const timeToInt = (timeString: string) => {
   const [hourString, minString] = timeString.split(':')
   const [hours, mins] = [parseInt(hourString), parseInt(minString)]
   return mins + hours * 60
 }
 
-export const intToTime = (timeInt: number) => {
+const intToTime = (timeInt: number) => {
   return `${Math.floor(timeInt / 60)}:${timeInt % 60 < 10 ? "0" : ""}${timeInt % 60}`
 }
 
-export interface Slot {
+interface Slot {
   start: string,
   end: string
 }
@@ -24,13 +23,16 @@ interface IntSlot {
   end: number
 }
 
-export interface ResourceSlot extends Slot {
+interface ResourceSlot extends Slot {
   resources: number[]
 }
 
 interface ResourceIntSlot extends IntSlot {
   resources: number[]
 }
+
+const intSlotToSlot = (slot: IntSlot | ResourceIntSlot) => ({...slot, start: intToTime(slot.start), end: intToTime(slot.end)})
+const slotToIntSlot = (slot: Slot | ResourceSlot) => ({...slot, start: timeToInt(slot.start), end: timeToInt(slot.end)})
 
 // Based on AABB collision detection
 const slotCollides = (slotA: IntSlot, slotB: IntSlot): boolean => {
@@ -47,8 +49,7 @@ const slotSubtract = (slotA: ResourceIntSlot, slotB: IntSlot, resource: number):
   // | A | B |  |   |
   // |   +---'  |---| <- shorter A starts at B end
   // '---'      '---'
-  if (slotA.start <= slotB.start && slotA.end >= slotB.end) {
-    console.log('A includes all B')
+  if (slotA.start < slotB.start && slotA.end > slotB.end) {
     const shorterSlotATop = {
         ...slotA,
         end: slotB.start
@@ -75,8 +76,7 @@ const slotSubtract = (slotA: ResourceIntSlot, slotB: IntSlot, resource: number):
   // | A | B |  |   |
   // '---+   |  '---'
   //     '---'
-  if (slotA.start >= slotB.start && slotA.end <= slotB.end) {
-    console.log("B includes all A")
+  if (slotA.start > slotB.start && slotA.end < slotB.end) {
     const subtractedResources = resourceSubtraction(slotA.resources, resource)
     return subtractedResources.length > 0 ? [
       {
@@ -96,7 +96,6 @@ const slotSubtract = (slotA: ResourceIntSlot, slotB: IntSlot, resource: number):
       && slotA.start > slotB.start
       && slotA.end > slotB.end
   ) {
-    console.log("A start overlaps B end")
     const shorterSlotA = {
         ...slotA,
         start: slotB.end
@@ -122,7 +121,6 @@ const slotSubtract = (slotA: ResourceIntSlot, slotB: IntSlot, resource: number):
       && slotA.start < slotB.start
       && slotA.end < slotB.end
   ) {
-    console.log('A end overlaps B start')
     const shorterSlotA = {
         ...slotA,
         end: slotB.start
@@ -140,67 +138,108 @@ const slotSubtract = (slotA: ResourceIntSlot, slotB: IntSlot, resource: number):
   }
 
   // No collision
-  console.log("No collision")
+  console.log("No collision detected")
   return [slotA]
 }
 
-const removeZeroTimeSlots = (slots: ResourceIntSlot[]) => slots.filter(s => s.end > s.start)
+enum TestSelection {
+  A_INCLUDES_B,
+  B_INCLUDES_A,
+  A_START_OVERLAPS_B_END,
+  B_START_OVERLAPS_A_END,
+}
+const currentTestSelection = TestSelection.B_INCLUDES_A
 
-const findCollidingSlots = (slots: ResourceIntSlot[], testSlot: IntSlot) => slots.reduce((collisionObject, slot) => (
-  slotCollides(slot, testSlot) ? {
-    ...collisionObject,
-    colliding: [...collisionObject.colliding, slot]
-  } : {
-    ...collisionObject,
-    nonColliding: [...collisionObject.nonColliding, slot]
-  }
-), {colliding: [], nonColliding: []})
+// @ts-ignore
+if (currentTestSelection === TestSelection.A_INCLUDES_B) {
+  const testSlotA = { start: "08:00", end: "17:00", resources: [0, 1]}
+  const testSlotB = { start: "09:00", end: "11:00"}
 
-const getFreeIntSlots = (availability: IntSlot, bookings: IntSlot[][]): ResourceIntSlot[] => {
-  const initialFreeSlots = [{
-    ...availability,
-    resources: range(bookings.length)
-  }]
-  let currentFreeSlots = initialFreeSlots
-  
-  for (const resource of range(bookings.length)) {
-    const currentBookedSlots = bookings[resource]
-    for (const bookedSlot of currentBookedSlots) {
-      console.log("---Slot iteration " + resource + "----")
-      console.log({currentFreeSlots})
-      const {colliding, nonColliding} = findCollidingSlots(currentFreeSlots, bookedSlot)
-      console.log(bookedSlot)
-      console.log({colliding, nonColliding})
-      let subtractedSlots = []
-      for (const collidingSlot of colliding) {
-        subtractedSlots = [...subtractedSlots, ...slotSubtract(collidingSlot, bookedSlot, resource)]
-        console.log({subtractedSlots})
-      }
-      currentFreeSlots = [...nonColliding, ...subtractedSlots]
-      console.log({currentFreeSlots})
-    }
-    currentFreeSlots = removeZeroTimeSlots(currentFreeSlots)
-  }
+  console.log("A includes B")
+  // @ts-ignore
+  const testSubtraction = slotSubtract(slotToIntSlot(testSlotA), slotToIntSlot(testSlotB), 1)
+  console.log(testSubtraction)
+  console.log(JSON.stringify({
+    bookedSlots: [
+      [
+        testSlotA
+      ],
+      [
+        testSlotB
+      ]
+    ],
+    // @ts-ignore
+    givenOutcome: testSubtraction.map( s => intSlotToSlot(s))
+  }, null, 2))
+// @ts-ignore
+} else if (currentTestSelection === TestSelection.B_INCLUDES_A) {
+  const testSlotA = { start: "09:00", end: "11:00", resources: [0, 1]}
+  const testSlotB = { start: "08:00", end: "17:00"}
 
-  return currentFreeSlots
+  console.log("B includes A")
+  // @ts-ignore
+  const testSubtraction = slotSubtract(slotToIntSlot(testSlotA), slotToIntSlot(testSlotB), 1)
+  console.log(testSubtraction)
+  console.log(JSON.stringify({
+    bookedSlots: [
+      [
+        testSlotA
+      ],
+      [
+        testSlotB
+      ]
+    ],
+    // @ts-ignore
+    givenOutcome: testSubtraction.map( s => intSlotToSlot(s))
+  }, null, 2))
+// @ts-ignore
+} else if (currentTestSelection === TestSelection.A_START_OVERLAPS_B_END) {
+  const testSlotA = { start: "08:30", end: "10:30", resources: [0, 1]}
+  const testSlotB = { start: "08:00", end: "9:30"}
+
+  console.log("A start overlaps B end")
+  // @ts-ignore
+  const testSubtraction = slotSubtract(slotToIntSlot(testSlotA), slotToIntSlot(testSlotB), 1)
+  console.log(testSubtraction)
+  console.log(JSON.stringify({
+    bookedSlots: [
+      [
+        testSlotA
+      ],
+      [
+        testSlotB
+      ]
+    ],
+    // @ts-ignore
+    givenOutcome: testSubtraction.map( s => intSlotToSlot(s))
+  }, null, 2))
+// @ts-ignore
+} else if (currentTestSelection === TestSelection.B_START_OVERLAPS_A_END) {
+  // Slot A start overlaps slotB end
+  const testSlotA = { start: "08:30", end: "15:30", resources: [0, 1]}
+  const testSlotB = { start: "11:00", end: "18:00"}
+
+  console.log("B start overlaps A end")
+  // @ts-ignore
+  const testSubtraction = slotSubtract(slotToIntSlot(testSlotA), slotToIntSlot(testSlotB), 1)
+  console.log(testSubtraction)
+  console.log(JSON.stringify({
+    bookedSlots: [
+      [
+        testSlotA
+      ],
+      [
+        testSlotB
+      ]
+    ],
+    // @ts-ignore
+    givenOutcome: testSubtraction.map( s => intSlotToSlot(s))
+  }, null, 2))
 }
 
-export const getFreeSlots = (availability: Slot, bookings: Slot[][]): ResourceSlot[] => {
-  console.log('-------------New------------------')
-  return getFreeIntSlots(
-    // Convert time string into int
-    {
-      start: timeToInt(availability.start),
-      end: timeToInt(availability.end)
-    },
-    bookings.map(nurseBookings => nurseBookings.map(slot => ({
-      start: timeToInt(slot.start),
-      end: timeToInt(slot.end),
-    })))
-    // Convert back time int into time string
-  ).map(freeSlot => ({
-    ...freeSlot,
-    start: intToTime(freeSlot.start),
-    end: intToTime(freeSlot.end),
-  }))
-}
+
+
+
+// No export
+const _ = {}
+export default _
