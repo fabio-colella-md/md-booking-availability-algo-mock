@@ -1,4 +1,5 @@
 {
+  "onlyShow": false,
   "availability": {
     "start": "07:00",
     "end": "18:00"
@@ -45,10 +46,11 @@
       }
     ]
   ],
-  "outcome": [
+  "givenOutcome": [
     {
       "start": "12:10",
-      "end": "13:15"
+      "end": "13:15",
+      "nurses": [0, 1, 2, 3, 4]
     }
   ],
   "error": null

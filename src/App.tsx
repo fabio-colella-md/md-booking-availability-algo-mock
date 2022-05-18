@@ -1,19 +1,11 @@
-import styles from './App.module.css'
-import initialData from './data.json'
+
 import { useRef } from 'react'
 import { useEffect } from 'react';
 import { useState } from 'react';
+import styles from './App.module.css'
 
-const range = (s, e = null): number[] =>
-  e === null
-    ? [...Array(s).keys()]
-    : [...Array(e - s).keys()].map((i) => i + s);
-
-const timeToInt = (timeString: string) => {
-  const [hourString, minString] = timeString.split(':')
-  const [hours, mins] = [parseInt(hourString), parseInt(minString)]
-  return mins + hours * 60
-}
+import initialData from './data.json'
+import { range, timeToInt, getFreeSlots } from './collisionAlgorithm';
 
 const Canvas = ({ nurses, availability, bookedSlots, outcome }) => {
   const [width, height] = [800, 600]
@@ -117,10 +109,8 @@ const Canvas = ({ nurses, availability, bookedSlots, outcome }) => {
       strokeNursesRects(ctx)
       availability && fillAvailabilityTimes(ctx)
       fillOutcomeText(ctx)
-      
-      
-      
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasRef, nurses, availability, bookedSlots, outcome])
   
   return <canvas className={styles.canvas} ref={canvasRef} width={width} height={height}/>
@@ -132,7 +122,14 @@ const App = () => {
 
   useEffect(() => {
     try {
-      setValues(JSON.parse(jsonValues))
+      const values = JSON.parse(jsonValues)
+      const computedOutcome = values["availability"] && values["bookedSlots"] 
+        ? getFreeSlots(values["availability"], values["bookedSlots"])
+        : null
+      setValues({
+        ...values,
+        computedOutcome
+      })
     } catch (_e) {
       // @ts-ignore
       setValues({ error: "Cannot parse" })
@@ -154,7 +151,11 @@ const App = () => {
           nurses={(values && values["bookedSlots"] ? values["bookedSlots"].length : 0)}
           availability={(values && values["availability"]) || null}
           bookedSlots={(values && values["bookedSlots"]) || null}
-          outcome={(values && values["outcome"]) || null}
+          outcome={
+            (values && values["onlyShow"]) ?
+              values["givenOutcome"] || null
+            : values["computedOutcome"] || null
+        }
         />
       </div>
     </div>
