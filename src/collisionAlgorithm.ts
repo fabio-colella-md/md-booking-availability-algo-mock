@@ -48,7 +48,6 @@ const slotSubtract = (slotA: ResourceIntSlot, slotB: IntSlot, resource: number):
   // |   +---'  |---| <- shorter A starts at B end
   // '---'      '---'
   if (slotA.start <= slotB.start && slotA.end >= slotB.end) {
-    console.log('A includes all B')
     const shorterSlotATop = {
         ...slotA,
         end: slotB.start
@@ -76,7 +75,6 @@ const slotSubtract = (slotA: ResourceIntSlot, slotB: IntSlot, resource: number):
   // '---+   |  '---'
   //     '---'
   if (slotA.start >= slotB.start && slotA.end <= slotB.end) {
-    console.log("B includes all A")
     const subtractedResources = resourceSubtraction(slotA.resources, resource)
     return subtractedResources.length > 0 ? [
       {
@@ -96,7 +94,6 @@ const slotSubtract = (slotA: ResourceIntSlot, slotB: IntSlot, resource: number):
       && slotA.start > slotB.start
       && slotA.end > slotB.end
   ) {
-    console.log("A start overlaps B end")
     const shorterSlotA = {
         ...slotA,
         start: slotB.end
@@ -122,7 +119,6 @@ const slotSubtract = (slotA: ResourceIntSlot, slotB: IntSlot, resource: number):
       && slotA.start < slotB.start
       && slotA.end < slotB.end
   ) {
-    console.log('A end overlaps B start')
     const shorterSlotA = {
         ...slotA,
         end: slotB.start
@@ -140,7 +136,6 @@ const slotSubtract = (slotA: ResourceIntSlot, slotB: IntSlot, resource: number):
   }
 
   // No collision
-  console.log("No collision")
   return [slotA]
 }
 
@@ -166,18 +161,12 @@ const getFreeIntSlots = (availability: IntSlot, bookings: IntSlot[][]): Resource
   for (const resource of range(bookings.length)) {
     const currentBookedSlots = bookings[resource]
     for (const bookedSlot of currentBookedSlots) {
-      console.log("---Slot iteration " + resource + "----")
-      console.log({currentFreeSlots})
       const {colliding, nonColliding} = findCollidingSlots(currentFreeSlots, bookedSlot)
-      console.log(bookedSlot)
-      console.log({colliding, nonColliding})
       let subtractedSlots = []
       for (const collidingSlot of colliding) {
         subtractedSlots = [...subtractedSlots, ...slotSubtract(collidingSlot, bookedSlot, resource)]
-        console.log({subtractedSlots})
       }
       currentFreeSlots = [...nonColliding, ...subtractedSlots]
-      console.log({currentFreeSlots})
     }
     currentFreeSlots = removeZeroTimeSlots(currentFreeSlots)
   }
@@ -186,7 +175,6 @@ const getFreeIntSlots = (availability: IntSlot, bookings: IntSlot[][]): Resource
 }
 
 export const getFreeSlots = (availability: Slot, bookings: Slot[][]): ResourceSlot[] => {
-  console.log('-------------New------------------')
   return getFreeIntSlots(
     // Convert time string into int
     {
