@@ -108,6 +108,19 @@ const Canvas = ({ nurses, availability, bookedSlots, outcome }) => {
     }
   }
 
+  useEffect(() => {
+    if (outcome) {
+      const slotSizes = outcome.map(slot => timeToInt(slot.end) - timeToInt(slot.start))
+      const smallest = Math.min(...slotSizes)
+      if (smallest < 30) {
+        const multiplier = 30 / smallest
+        setHeight(3000 / 6 * multiplier)
+      } else {
+        setHeight(850)
+      }
+    }
+  }, [outcome])
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const canvas = canvasRef.current
@@ -122,21 +135,7 @@ const Canvas = ({ nurses, availability, bookedSlots, outcome }) => {
       fillOutcomeText(ctx)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasRef, nurses, availability, bookedSlots, outcome])
-
-  useEffect(() => {
-    if (outcome) {
-      const slotSizes = outcome.map(slot => timeToInt(slot.end) - timeToInt(slot.start))
-      const smallest = Math.min(...slotSizes)
-      if (smallest < 30) {
-        const multiplier = 30 / smallest
-        setHeight(3000 / 6 * multiplier)
-      } else {
-        setHeight(850)
-      }
-    }
-    
-  }, [outcome])
+  }, [canvasRef, nurses, availability, bookedSlots, outcome, height])
   
   return <canvas className={styles.canvas} ref={canvasRef} width={width} height={height}/>
 }
