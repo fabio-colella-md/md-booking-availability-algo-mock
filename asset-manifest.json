@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/md-booking-availability-algo-mock/static/css/main.dec706cf.css",
-    "main.js": "/md-booking-availability-algo-mock/static/js/main.fdc2934a.js",
+    "main.js": "/md-booking-availability-algo-mock/static/js/main.4c0de14d.js",
     "static/js/787.ae10856c.chunk.js": "/md-booking-availability-algo-mock/static/js/787.ae10856c.chunk.js",
     "index.html": "/md-booking-availability-algo-mock/index.html",
     "main.dec706cf.css.map": "/md-booking-availability-algo-mock/static/css/main.dec706cf.css.map",
-    "main.fdc2934a.js.map": "/md-booking-availability-algo-mock/static/js/main.fdc2934a.js.map",
+    "main.4c0de14d.js.map": "/md-booking-availability-algo-mock/static/js/main.4c0de14d.js.map",
     "787.ae10856c.chunk.js.map": "/md-booking-availability-algo-mock/static/js/787.ae10856c.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.dec706cf.css",
-    "static/js/main.fdc2934a.js"
+    "static/js/main.4c0de14d.js"
   ]
 }
